@@ -46,6 +46,9 @@ import {
   ShieldAlert,
   Siren,
   TrafficCone,
+  ClipboardList,
+  Filter,
+  PieChart,
 } from 'lucide-react';
 import {
   Line,
@@ -180,41 +183,40 @@ const features: FeaturePillProps[] = [
 ];
 
 const tickerItems = [
-  'ROAD HEALTH 91%',
-  'SLA COMPLIANCE 94.7%',
-  'LIVE INCIDENTS 126',
-  'TRAFFIC NORMAL',
-  'WASTE OPERATIONS ACTIVE',
-  'AIR QUALITY GOOD',
-  'ENERGY SAVINGS +18.4%',
+  'ROAD DAMAGE 86',
+  'BIN OVERFLOW 74',
+  'SLA 91.8%',
   'FIELD TEAMS 42',
+  'AI VERIFIED 214',
+  'HIGH PRIORITY 23',
+  'AVG RESPONSE 18 MIN',
 ];
 
 const workflowSteps = [
   {
-    title: 'Edge AI detects issue',
-    eyebrow: 'Step 1',
+    title: 'Detection',
+    eyebrow: 'Edge AI',
     description:
       'Vehicle cameras and citizen reports flag road damage, bins, and public-space risks at the edge.',
     icon: <Camera className="h-5 w-5" aria-hidden="true" />,
   },
   {
-    title: 'GIS validates location',
-    eyebrow: 'Step 2',
+    title: 'Verification',
+    eyebrow: 'GIS Lock',
     description:
       'The incident locks to the asset registry, service zone, and nearest operational team.',
     icon: <MapPin className="h-5 w-5" aria-hidden="true" />,
   },
   {
-    title: 'SLA engine prioritizes',
-    eyebrow: 'Step 3',
+    title: 'Assignment',
+    eyebrow: 'SLA Engine',
     description:
       'Municipal rules rank severity, response time, and public impact before dispatch.',
     icon: <Siren className="h-5 w-5" aria-hidden="true" />,
   },
   {
-    title: 'Field team resolves',
-    eyebrow: 'Step 4',
+    title: 'Resolution',
+    eyebrow: 'Field Team',
     description:
       'A route, work order, and live status update close the operational loop.',
     icon: <CheckCircle2 className="h-5 w-5" aria-hidden="true" />,
@@ -437,6 +439,40 @@ function AnimatedBackground() {
   );
 }
 
+function OperationalBackgroundLabels() {
+  const reducedMotion = useReducedMotion();
+  const labels = [
+    ['GIS 25.2048N 55.2708E', 'left-[7%] top-[22%]'],
+    ['SLA WATCH 91.8%', 'right-[8%] top-[28%]'],
+    ['ZONE A-14 LIVE', 'left-[10%] bottom-[24%]'],
+    ['ASSET GRID 48,230', 'right-[10%] bottom-[18%]'],
+  ];
+
+  return (
+    <div className="pointer-events-none fixed inset-0 z-[1] hidden md:block">
+      <div className={cn('city-intelligence-ring absolute left-[4%] top-[46%]', reducedMotion && 'motion-paused')} />
+      {labels.map(([label, position], index) => (
+        <motion.span
+          key={label}
+          className={cn(
+            'absolute rounded-full border border-[#D4AF37]/20 bg-white/30 px-3 py-1 text-[0.62rem] font-semibold uppercase tracking-[0.2em] text-[#6B7280] backdrop-blur-md',
+            position,
+          )}
+          animate={reducedMotion ? undefined : { y: [0, -8, 0], opacity: [0.42, 0.72, 0.42] }}
+          transition={{
+            duration: 7 + index,
+            repeat: Infinity,
+            ease: easeInOut,
+            delay: index * 0.5,
+          }}
+        >
+          {label}
+        </motion.span>
+      ))}
+    </div>
+  );
+}
+
 function StatCard({
   icon,
   label,
@@ -539,6 +575,9 @@ function CityMapMock() {
     >
       <div className="absolute inset-0 map-grid opacity-80" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_34%_28%,rgba(15,23,42,0.12),transparent_30%),radial-gradient(circle_at_78%_70%,rgba(212,175,55,0.24),transparent_28%)]" />
+      <div className="heat-zone heat-zone-a" />
+      <div className="heat-zone heat-zone-b" />
+      <div className="heat-zone heat-zone-c" />
 
       <svg
         className="absolute inset-0 h-full w-full"
@@ -546,6 +585,22 @@ function CityMapMock() {
         fill="none"
         aria-hidden="true"
       >
+        <motion.path
+          d="M140 110 L340 76 L430 178 L355 296 L180 264 Z"
+          className="zone-boundary"
+          initial={{ pathLength: 0 }}
+          whileInView={{ pathLength: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 1.6, ease: easeOut }}
+        />
+        <motion.path
+          d="M520 105 L760 78 L822 244 L710 355 L540 286 Z"
+          className="zone-boundary zone-boundary-gold"
+          initial={{ pathLength: 0 }}
+          whileInView={{ pathLength: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 1.8, delay: 0.16, ease: easeOut }}
+        />
         {[
           'M-20 370 C170 270 250 310 390 205 C520 106 650 180 930 70',
           'M100 530 C140 385 260 350 320 245 C382 138 420 76 590 -15',
@@ -579,6 +634,9 @@ function CityMapMock() {
       <span className="vehicle vehicle-c" />
       <span className="dispatch dispatch-a" />
       <span className="dispatch dispatch-b" />
+      <span className="waste-route-dot" />
+      <span className="inspection-route-dot" />
+      <span className="dispatch-line" />
 
       {buildings.map((building, index) => (
         <motion.div
@@ -616,6 +674,9 @@ function CityMapMock() {
           style={{ animationDelay: `${index * 0.45}s` }}
         />
       ))}
+      <div className="incident-cluster left-[57%] top-[45%]">
+        <span>8</span>
+      </div>
 
       {sensors.map((sensor, index) => (
         <div
@@ -894,6 +955,264 @@ function DataTicker() {
         ))}
       </div>
     </div>
+  );
+}
+
+function SectionBridge({
+  label,
+  secondary,
+}: {
+  label: string;
+  secondary: string;
+}) {
+  return (
+    <div className="section-bridge relative z-10 px-4 py-4 md:px-8">
+      <div className="mx-auto flex max-w-7xl items-center gap-4 overflow-hidden rounded-full border border-white/45 bg-white/38 px-4 py-2 text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-[#6B7280] shadow-[0_18px_44px_rgba(15,23,42,0.06)] backdrop-blur-xl">
+        <span className="whitespace-nowrap text-[#0F172A]">{label}</span>
+        <span className="bridge-line h-px flex-1" />
+        <span className="bridge-dot h-1.5 w-1.5 rounded-full bg-[#D4AF37]" />
+        <span className="whitespace-nowrap text-[#8A6A0A]">{secondary}</span>
+      </div>
+    </div>
+  );
+}
+
+function DashboardDensitySection() {
+  const incidents = [
+    ['INC-2041', 'Road damage', 'High', 'Zone A-14'],
+    ['INC-2038', 'Bin overflow', 'Medium', 'Zone C-02'],
+    ['INC-2032', 'Light outage', 'High', 'Zone B-09'],
+  ];
+  const feed = [
+    'AI verified 23 road-surface alerts',
+    'Team 07 accepted dispatch route',
+    'Waste truck ETA updated to 18 min',
+    'Zone B-09 escalated to priority lane',
+  ];
+
+  return (
+    <motion.section
+      className="relative z-10 px-4 py-8 md:px-8"
+      initial={{ opacity: 0, y: 36 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-120px' }}
+      transition={{ duration: 0.8, ease: easeOut }}
+    >
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-5 flex flex-col justify-between gap-3 md:flex-row md:items-end">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#8A6A0A]">
+              Executive Operations View
+            </p>
+            <h2 className="mt-2 text-2xl font-semibold text-[#0F172A] md:text-4xl">
+              Live municipal command density
+            </h2>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {['24/7 Ops', 'GIS Synced', 'SLA Guardrails'].map((chip) => (
+              <span
+                key={chip}
+                className="liquid-glass rounded-full px-3 py-1.5 text-xs font-semibold text-[#0F172A]"
+              >
+                <span className="relative z-10">{chip}</span>
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid gap-4 lg:grid-cols-[1fr_1.1fr_1fr]">
+          <motion.article
+            className="liquid-glass command-card rounded-[1.5rem] p-5"
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.75, ease: easeOut }}
+          >
+            <div className="relative z-10 flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-[#0F172A]">
+                Incident Severity
+              </h3>
+              <PieChart className="h-5 w-5 text-[#D4AF37]" aria-hidden="true" />
+            </div>
+            <div className="relative z-10 mt-5 grid grid-cols-[8rem_1fr] items-center gap-5">
+              <div className="severity-donut flex h-32 w-32 items-center justify-center rounded-full">
+                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-white/80 text-center text-sm font-semibold text-[#0F172A]">
+                  23
+                  <br />
+                  High
+                </div>
+              </div>
+              <div className="grid gap-3 text-xs font-medium text-[#6B7280]">
+                {[
+                  ['High priority', '23', '#D4AF37'],
+                  ['Medium', '71', '#1E293B'],
+                  ['Low', '102', '#E8D49A'],
+                ].map(([name, value, color]) => (
+                  <div key={name} className="flex items-center justify-between">
+                    <span className="flex items-center gap-2">
+                      <span className="h-2 w-2 rounded-full" style={{ backgroundColor: color }} />
+                      {name}
+                    </span>
+                    <span className="font-semibold text-[#0F172A]">{value}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </motion.article>
+
+          <motion.article
+            className="liquid-glass command-card rounded-[1.5rem] p-5"
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.75, delay: 0.08, ease: easeOut }}
+          >
+            <div className="relative z-10 flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-[#0F172A]">
+                SLA Trend & Zone Performance
+              </h3>
+              <Gauge className="h-5 w-5 text-[#D4AF37]" aria-hidden="true" />
+            </div>
+            <div className="relative z-10 mt-4 h-28">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={chartData} margin={{ left: -12, right: 4 }}>
+                  <Tooltip content={<ChartTooltip />} cursor={false} />
+                  <Line
+                    type="monotone"
+                    dataKey="value"
+                    stroke="#D4AF37"
+                    strokeWidth={3}
+                    dot={false}
+                    isAnimationActive
+                    animationDuration={1600}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="relative z-10 mt-4 grid gap-2">
+              {[
+                ['Zone A-14', 91],
+                ['Zone B-09', 84],
+                ['Zone C-02', 77],
+              ].map(([zone, value]) => (
+                <div key={zone}>
+                  <div className="mb-1 flex justify-between text-xs font-semibold text-[#6B7280]">
+                    <span>{zone}</span>
+                    <span>{value}%</span>
+                  </div>
+                  <div className="h-2 rounded-full bg-[#0F172A]/10">
+                    <motion.div
+                      className="h-2 rounded-full bg-gradient-to-r from-[#0F172A] to-[#D4AF37]"
+                      initial={{ width: 0 }}
+                      whileInView={{ width: `${value}%` }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 1.1, ease: easeOut }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.article>
+
+          <motion.article
+            className="liquid-glass command-card rounded-[1.5rem] p-5"
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.75, delay: 0.16, ease: easeOut }}
+          >
+            <div className="relative z-10 flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-[#0F172A]">
+                Live Activity Feed
+              </h3>
+              <ClipboardList className="h-5 w-5 text-[#D4AF37]" aria-hidden="true" />
+            </div>
+            <div className="relative z-10 mt-4 grid gap-3">
+              {feed.map((item, index) => (
+                <motion.div
+                  key={item}
+                  className="flex items-start gap-3 rounded-2xl bg-white/48 p-3 text-xs text-[#6B7280]"
+                  initial={{ opacity: 0, x: 22 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.55, delay: index * 0.08, ease: easeOut }}
+                >
+                  <span className="mt-1 h-2 w-2 rounded-full bg-[#D4AF37]" />
+                  <span>{item}</span>
+                </motion.div>
+              ))}
+            </div>
+          </motion.article>
+        </div>
+
+        <div className="mt-4 grid gap-4 lg:grid-cols-[0.8fr_1.2fr]">
+          <motion.article
+            className="liquid-glass command-card rounded-[1.5rem] p-5"
+            initial={{ opacity: 0, y: 36 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.75, ease: easeOut }}
+          >
+            <div className="relative z-10 flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-[#0F172A]">
+                Dispatch Funnel
+              </h3>
+              <Filter className="h-5 w-5 text-[#D4AF37]" aria-hidden="true" />
+            </div>
+            <div className="relative z-10 mt-5 grid gap-3">
+              {[
+                ['Detected', 214],
+                ['Verified', 168],
+                ['Assigned', 94],
+                ['Resolved', 71],
+              ].map(([label, value], index) => (
+                <div key={label} className="grid grid-cols-[5.5rem_1fr_3rem] items-center gap-3 text-xs font-semibold text-[#6B7280]">
+                  <span>{label}</span>
+                  <div className="h-8 rounded-full bg-[#0F172A]/8">
+                    <motion.div
+                      className="h-8 rounded-full bg-gradient-to-r from-[#0F172A] to-[#D4AF37]"
+                      initial={{ width: 0 }}
+                      whileInView={{ width: `${88 - index * 16}%` }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 1, delay: index * 0.08, ease: easeOut }}
+                    />
+                  </div>
+                  <span className="text-right text-[#0F172A]">{value}</span>
+                </div>
+              ))}
+            </div>
+          </motion.article>
+
+          <motion.article
+            className="liquid-glass command-card rounded-[1.5rem] p-5"
+            initial={{ opacity: 0, y: 36 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.75, delay: 0.08, ease: easeOut }}
+          >
+            <div className="relative z-10 flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-[#0F172A]">
+                High Priority Incident Table
+              </h3>
+              <CircleAlert className="h-5 w-5 text-[#D4AF37]" aria-hidden="true" />
+            </div>
+            <div className="relative z-10 mt-4 overflow-hidden rounded-2xl border border-white/50">
+              {incidents.map(([id, type, severity, zone], index) => (
+                <div
+                  key={id}
+                  className="grid grid-cols-[0.8fr_1.3fr_0.8fr_0.8fr] gap-3 border-b border-white/45 bg-white/38 px-4 py-3 text-xs last:border-b-0"
+                >
+                  <span className="font-semibold text-[#0F172A]">{id}</span>
+                  <span className="text-[#6B7280]">{type}</span>
+                  <span className={cn('font-semibold', index === 1 ? 'text-[#8A6A0A]' : 'text-[#0F172A]')}>{severity}</span>
+                  <span className="text-right text-[#6B7280]">{zone}</span>
+                </div>
+              ))}
+            </div>
+          </motion.article>
+        </div>
+      </div>
+    </motion.section>
   );
 }
 
@@ -1347,6 +1666,7 @@ export default function App() {
     <div className="relative min-h-screen overflow-hidden bg-[#F8F9FB] text-[#111827]">
       <ScrollColorWash />
       <AnimatedBackground />
+      <OperationalBackgroundLabels />
       <ScrollProgressLayer />
 
       <motion.nav
@@ -1532,9 +1852,15 @@ export default function App() {
           </div>
         </motion.section>
 
+        <SectionBridge label="Telemetry bridge" secondary="Incidents, teams, routes, assets" />
+        <DashboardDensitySection />
+        <SectionBridge label="Workflow lock" secondary="Detection to resolution" />
         <StickyWorkflowSection />
+        <SectionBridge label="Layer transition" secondary="Operational intelligence surface" />
         <IntelligenceLayersSection />
+        <SectionBridge label="Command panels" secondary="Patrol, control, resolution" />
         <CinematicPanels />
+        <SectionBridge label="Core capabilities" secondary="Municipal platform modules" />
 
         <motion.section
           initial={{ opacity: 0, y: 30 }}
@@ -1551,6 +1877,7 @@ export default function App() {
           </div>
         </motion.section>
 
+        <SectionBridge label="Executive handoff" secondary="Future-ready municipality platform" />
         <FinalCTA />
       </main>
 
