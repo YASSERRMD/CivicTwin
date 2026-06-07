@@ -6,7 +6,16 @@ import {
   useRef,
   useState,
 } from 'react';
-import { motion, useInView, useReducedMotion } from 'framer-motion';
+import {
+  AnimatePresence,
+  type MotionValue,
+  motion,
+  useInView,
+  useReducedMotion,
+  useScroll,
+  useSpring,
+  useTransform,
+} from 'framer-motion';
 import {
   Activity,
   ArrowRight,
@@ -26,6 +35,17 @@ import {
   Truck,
   Users,
   Zap,
+  Boxes,
+  Camera,
+  CheckCircle2,
+  Lightbulb,
+  MapPin,
+  MessageSquare,
+  RadioTower,
+  Recycle,
+  ShieldAlert,
+  Siren,
+  TrafficCone,
 } from 'lucide-react';
 import {
   Line,
@@ -169,6 +189,48 @@ const tickerItems = [
   'ENERGY SAVINGS +18.4%',
   'FIELD TEAMS 42',
 ];
+
+const workflowSteps = [
+  {
+    title: 'Edge AI detects issue',
+    eyebrow: 'Step 1',
+    description:
+      'Vehicle cameras and citizen reports flag road damage, bins, and public-space risks at the edge.',
+    icon: <Camera className="h-5 w-5" aria-hidden="true" />,
+  },
+  {
+    title: 'GIS validates location',
+    eyebrow: 'Step 2',
+    description:
+      'The incident locks to the asset registry, service zone, and nearest operational team.',
+    icon: <MapPin className="h-5 w-5" aria-hidden="true" />,
+  },
+  {
+    title: 'SLA engine prioritizes',
+    eyebrow: 'Step 3',
+    description:
+      'Municipal rules rank severity, response time, and public impact before dispatch.',
+    icon: <Siren className="h-5 w-5" aria-hidden="true" />,
+  },
+  {
+    title: 'Field team resolves',
+    eyebrow: 'Step 4',
+    description:
+      'A route, work order, and live status update close the operational loop.',
+    icon: <CheckCircle2 className="h-5 w-5" aria-hidden="true" />,
+  },
+];
+
+const intelligenceCards = [
+  ['Infrastructure Health', <Activity className="h-5 w-5" aria-hidden="true" />],
+  ['Waste Operations', <Recycle className="h-5 w-5" aria-hidden="true" />],
+  ['Traffic Flow', <TrafficCone className="h-5 w-5" aria-hidden="true" />],
+  ['Environmental Sensors', <RadioTower className="h-5 w-5" aria-hidden="true" />],
+  ['Smart Lighting', <Lightbulb className="h-5 w-5" aria-hidden="true" />],
+  ['Public Safety', <ShieldAlert className="h-5 w-5" aria-hidden="true" />],
+  ['Citizen Reports', <MessageSquare className="h-5 w-5" aria-hidden="true" />],
+  ['Asset Lifecycle', <Boxes className="h-5 w-5" aria-hidden="true" />],
+] as const;
 
 function CountUp({
   end,
@@ -714,11 +776,11 @@ function MiniDashboard() {
 function FeaturePill({ icon, title, description }: FeaturePillProps) {
   return (
     <motion.article
-      initial={{ opacity: 0, y: 28 }}
-      whileInView={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0, y: 50, clipPath: 'inset(100% 0 0 0)' }}
+      whileInView={{ opacity: 1, y: 0, clipPath: 'inset(0% 0 0 0)' }}
       viewport={{ once: true }}
       whileHover={{ y: -6 }}
-      transition={{ duration: 0.75, ease: easeOut }}
+      transition={{ duration: 0.9, ease: easeOut }}
       className="liquid-glass command-card group rounded-2xl p-5"
     >
       <motion.div
@@ -784,19 +846,26 @@ function FloatingBadge({
   children,
   className,
   delay,
+  x,
+  y,
 }: {
   children: ReactNode;
   className: string;
   delay: number;
+  x?: MotionValue<number>;
+  y?: MotionValue<number>;
 }) {
+  const reducedMotion = useReducedMotion();
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: [0, -10, 0] }}
+      animate={reducedMotion ? { opacity: 1 } : { opacity: 1, y: [0, -10, 0] }}
       transition={{
         opacity: { delay, duration: 0.7, ease: easeOut },
         y: { delay, duration: 4 + delay * 2, repeat: Infinity, ease: easeInOut },
       }}
+      style={{ x: reducedMotion ? 0 : x, y: reducedMotion ? 0 : y }}
       className={cn(
         'liquid-glass pointer-events-none absolute z-20 hidden rounded-full px-4 py-2 text-xs font-semibold text-[#0F172A] shadow-lg lg:inline-flex',
         className,
@@ -808,11 +877,12 @@ function FloatingBadge({
 }
 
 function DataTicker() {
+  const reducedMotion = useReducedMotion();
   const loop = [...tickerItems, ...tickerItems];
 
   return (
     <div className="relative z-10 mt-8 overflow-hidden border-y border-white/50 bg-white/42 py-3 shadow-[0_18px_44px_rgba(15,23,42,0.07)] backdrop-blur-xl">
-      <div className="ticker-track flex w-max items-center gap-6">
+      <div className={cn('flex w-max items-center gap-6', !reducedMotion && 'ticker-track')}>
         {loop.map((item, index) => (
           <span
             key={`${item}-${index}`}
@@ -827,10 +897,457 @@ function DataTicker() {
   );
 }
 
+function ScrollProgressLayer() {
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, {
+    stiffness: 120,
+    damping: 28,
+    restDelta: 0.001,
+  });
+
+  return (
+    <motion.div
+      className="fixed left-0 top-0 z-50 h-1 origin-left bg-[#D4AF37]"
+      style={{ scaleX }}
+    />
+  );
+}
+
+function ScrollColorWash() {
+  const { scrollYProgress } = useScroll();
+  const backgroundColor = useTransform(
+    scrollYProgress,
+    [0, 0.34, 0.68, 1],
+    ['#F8F9FB', '#EEF1F6', '#F7F3E8', '#F8F9FB'],
+  );
+
+  return (
+    <motion.div
+      className="pointer-events-none fixed inset-0 z-0"
+      style={{ backgroundColor }}
+    />
+  );
+}
+
+function SplitHeading({ text, className }: { text: string; className?: string }) {
+  const words = text.split(' ');
+
+  return (
+    <motion.h2
+      className={cn(
+        'mx-auto max-w-5xl text-center text-3xl font-semibold leading-tight text-[#0F172A] md:text-5xl',
+        className,
+      )}
+      initial="hidden"
+      whileInView="show"
+      viewport={{ once: true, margin: '-80px' }}
+      variants={{
+        hidden: {},
+        show: { transition: { staggerChildren: 0.06 } },
+      }}
+    >
+      {words.map((word, index) => (
+        <motion.span
+          key={`${word}-${index}`}
+          className="inline-block"
+          variants={{
+            hidden: { opacity: 0, y: 20 },
+            show: { opacity: 1, y: 0 },
+          }}
+          transition={{ duration: 0.7, ease: easeOut }}
+        >
+          {word}
+          {index < words.length - 1 && <span>&nbsp;</span>}
+        </motion.span>
+      ))}
+    </motion.h2>
+  );
+}
+
+function WorkflowVisual({ activeStep }: { activeStep: number }) {
+  return (
+    <div className="liquid-glass relative h-[28rem] overflow-hidden rounded-[2rem] p-6">
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeStep}
+          initial={{ opacity: 0, y: 30, scale: 0.96 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: -30, scale: 0.96 }}
+          transition={{ duration: 0.7, ease: easeOut }}
+          className="absolute inset-6"
+        >
+          {activeStep === 0 && (
+            <div className="workflow-visual ai-frame h-full rounded-[1.5rem]">
+              <div className="detection-box" />
+              <div className="detection-pulse left-[28%] top-[58%]" />
+              <div className="detection-pulse left-[68%] top-[34%]" />
+              <p className="absolute left-5 top-5 text-xs font-semibold uppercase tracking-[0.22em] text-[#D4AF37]">
+                Edge AI Detection
+              </p>
+            </div>
+          )}
+
+          {activeStep === 1 && (
+            <div className="workflow-visual gis-lock h-full rounded-[1.5rem]">
+              <div className="absolute inset-0 map-grid opacity-60" />
+              <motion.div
+                className="absolute left-1/2 top-1/2 flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-[#0F172A] text-[#D4AF37]"
+                animate={{ scale: [0.9, 1.12, 1] }}
+                transition={{ duration: 1.2, repeat: Infinity, ease: easeInOut }}
+              >
+                <MapPin className="h-7 w-7" aria-hidden="true" />
+              </motion.div>
+              <p className="absolute left-5 top-5 text-xs font-semibold uppercase tracking-[0.22em] text-[#D4AF37]">
+                GIS Location Lock
+              </p>
+            </div>
+          )}
+
+          {activeStep === 2 && (
+            <div className="workflow-visual sla-meter h-full rounded-[1.5rem]">
+              <p className="absolute left-5 top-5 text-xs font-semibold uppercase tracking-[0.22em] text-[#D4AF37]">
+                SLA Priority Engine
+              </p>
+              <div className="absolute inset-x-8 bottom-16 h-5 rounded-full bg-white/60">
+                <motion.div
+                  className="h-5 rounded-full bg-gradient-to-r from-[#E8D49A] via-[#C9A227] to-[#0F172A]"
+                  initial={{ width: '12%' }}
+                  animate={{ width: '88%' }}
+                  transition={{ duration: 1.2, ease: easeOut }}
+                />
+              </div>
+              <div className="absolute bottom-28 left-8 right-8 grid grid-cols-3 gap-3 text-xs font-semibold text-[#0F172A]">
+                <span>LOW</span>
+                <span className="text-center">MEDIUM</span>
+                <span className="text-right text-[#D4AF37]">CRITICAL</span>
+              </div>
+            </div>
+          )}
+
+          {activeStep === 3 && (
+            <div className="workflow-visual dispatch-route h-full rounded-[1.5rem]">
+              <svg className="absolute inset-0 h-full w-full" viewBox="0 0 420 360" fill="none" aria-hidden="true">
+                <motion.path
+                  d="M64 260 C130 210 154 248 210 174 C256 112 315 148 365 80"
+                  stroke="#D4AF37"
+                  strokeWidth="6"
+                  strokeLinecap="round"
+                  initial={{ pathLength: 0 }}
+                  animate={{ pathLength: 1 }}
+                  transition={{ duration: 1.4, ease: easeOut }}
+                />
+              </svg>
+              <div className="absolute bottom-[4.1rem] left-[3.6rem] h-5 w-5 rounded-full bg-[#0F172A]" />
+              <div className="absolute right-[3rem] top-[4.3rem] flex h-14 w-14 items-center justify-center rounded-full bg-[#0F172A] text-[#D4AF37]">
+                <Truck className="h-6 w-6" aria-hidden="true" />
+              </div>
+              <p className="absolute left-5 top-5 text-xs font-semibold uppercase tracking-[0.22em] text-[#D4AF37]">
+                Dispatch Route Active
+              </p>
+            </div>
+          )}
+        </motion.div>
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function StickyWorkflowSection() {
+  const workflowRef = useRef<HTMLElement | null>(null);
+  const reducedMotion = useReducedMotion();
+  const [activeStep, setActiveStep] = useState(0);
+  const { scrollYProgress } = useScroll({
+    target: workflowRef,
+    offset: ['start start', 'end end'],
+  });
+  const lineScale = useSpring(scrollYProgress, { stiffness: 120, damping: 30 });
+
+  useEffect(() => {
+    return scrollYProgress.on('change', (latest) => {
+      setActiveStep(Math.min(3, Math.floor(latest * 4)));
+    });
+  }, [scrollYProgress]);
+
+  return (
+    <section ref={workflowRef} className="relative z-10 h-[300vh] px-4 md:px-8">
+      <div className="sticky top-0 flex min-h-screen items-center py-16">
+        <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+          <div>
+            <SplitHeading
+              text="From Detection To Resolution"
+              className="mx-0 max-w-xl text-left"
+            />
+            <p className="mt-5 max-w-xl text-base leading-7 text-[#6B7280]">
+              A municipal workflow that stays pinned while the story advances:
+              AI detection, GIS validation, SLA priority, and dispatch closure.
+            </p>
+
+            <div className="relative mt-10 grid gap-4">
+              <div className="absolute bottom-8 left-6 top-8 w-px bg-[#0F172A]/10">
+                <motion.div
+                  className="h-full origin-top bg-[#D4AF37]"
+                  style={{ scaleY: reducedMotion ? 1 : lineScale }}
+                />
+              </div>
+              {workflowSteps.map((step, index) => {
+                const isActive = activeStep === index;
+                const isPast = activeStep > index;
+                return (
+                  <motion.article
+                    key={step.title}
+                    className={cn(
+                      'liquid-glass relative z-10 ml-12 rounded-2xl p-5 transition-colors duration-500',
+                      isActive && 'border-[#D4AF37]/70 bg-[#0F172A]/95 text-white',
+                    )}
+                    initial={{ opacity: 0, y: 80, scale: 0.92 }}
+                    whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                    animate={{
+                      opacity: isActive ? 1 : isPast ? 0.32 : 0.68,
+                      y: isPast ? -16 : 0,
+                      scale: isActive ? 1 : 0.96,
+                    }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.65, ease: easeOut }}
+                  >
+                    <span
+                      className={cn(
+                        'absolute -left-[3.28rem] top-6 flex h-10 w-10 items-center justify-center rounded-full border border-[#D4AF37]/40 bg-white text-[#0F172A]',
+                        isActive && 'step-node-active bg-[#D4AF37] text-[#0F172A]',
+                      )}
+                    >
+                      {step.icon}
+                    </span>
+                    <p className={cn('text-xs font-semibold uppercase tracking-[0.2em] text-[#8A6A0A]', isActive && 'text-[#E8D49A]')}>
+                      {step.eyebrow}
+                    </p>
+                    <h3 className={cn('mt-2 text-xl font-semibold text-[#0F172A]', isActive && 'text-white')}>
+                      {step.title}
+                    </h3>
+                    <p className={cn('mt-2 text-sm leading-6 text-[#6B7280]', isActive && 'text-white/70')}>
+                      {step.description}
+                    </p>
+                  </motion.article>
+                );
+              })}
+            </div>
+          </div>
+
+          <WorkflowVisual activeStep={activeStep} />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function IntelligenceLayersSection() {
+  const sectionRef = useRef<HTMLElement | null>(null);
+  const reducedMotion = useReducedMotion();
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ['start start', 'end end'],
+  });
+  const x = useTransform(scrollYProgress, [0, 1], [0, -2320]);
+  const smoothX = useSpring(x, { stiffness: 100, damping: 28 });
+
+  return (
+    <section ref={sectionRef} className="relative z-10 h-[250vh] overflow-hidden px-4 md:px-8">
+      <div className="sticky top-0 flex min-h-screen flex-col justify-center overflow-hidden py-16">
+        <div className="mx-auto w-full max-w-7xl">
+          <SplitHeading text="City Intelligence Layers" />
+          <p className="mx-auto mt-4 max-w-2xl text-center text-base leading-7 text-[#6B7280]">
+            Each operational layer moves as a connected intelligence surface,
+            revealing the systems that feed the digital twin.
+          </p>
+          <motion.div
+            className="mt-10 flex w-max gap-5"
+            style={{ x: reducedMotion ? 0 : smoothX }}
+          >
+            {intelligenceCards.map(([title, icon], index) => (
+              <motion.article
+                key={title}
+                className="liquid-glass intelligence-card h-[420px] w-[360px] rounded-[1.6rem] p-5"
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.75, delay: index * 0.05, ease: easeOut }}
+              >
+                <div className="relative z-10 rounded-2xl bg-[#0F172A] p-4 text-white">
+                  <div className="flex items-center justify-between">
+                    <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#D4AF37]/15 text-[#D4AF37]">
+                      {icon}
+                    </span>
+                    <span className="live-pill rounded-full bg-white/10 px-3 py-1 text-xs text-[#E8D49A]">
+                      Live Layer
+                    </span>
+                  </div>
+                  <h3 className="mt-5 text-2xl font-semibold">{title}</h3>
+                </div>
+                <div className="relative z-10 mt-6 h-44 rounded-2xl bg-white/42 p-4">
+                  <div className="mini-network">
+                    <span />
+                    <span />
+                    <span />
+                    <span />
+                  </div>
+                  <div className="absolute bottom-5 left-5 right-5 flex items-end gap-2">
+                    {[52, 72, 48, 86, 64, 92].map((height, barIndex) => (
+                      <motion.span
+                        key={`${title}-${barIndex}`}
+                        className="flex-1 rounded-full bg-gradient-to-t from-[#0F172A] to-[#D4AF37]"
+                        initial={{ height: 0 }}
+                        whileInView={{ height }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.8, delay: barIndex * 0.08, ease: easeOut }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </motion.article>
+            ))}
+          </motion.div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function CinematicPanels() {
+  const panels = [
+    ['AI Vehicle Patrol', 'patrol-panel', 'Animated road line, moving vehicle dot, detection pulse.'],
+    ['Municipal Command Center', 'command-panel', 'Dashboard grid, live chart, blinking operators.'],
+    ['Resolution Intelligence', 'resolution-panel', 'Route line, field team marker, completed status.'],
+  ];
+
+  return (
+    <section className="relative z-10 px-4 py-20 md:px-8">
+      <div className="mx-auto max-w-7xl">
+        <SplitHeading text="City operations should not live in disconnected systems." />
+        <SplitHeading
+          text="Every incident, asset, team, and SLA belongs in one operational layer."
+          className="mt-6 text-2xl text-[#6B7280] md:text-4xl"
+        />
+        <div className="mt-12 grid gap-5 lg:grid-cols-3">
+          {panels.map(([title, className, body], index) => (
+            <motion.article
+              key={title}
+              className="liquid-glass command-card rounded-[1.75rem] p-5"
+              initial={{ opacity: 0, y: 60, scale: 0.94 }}
+              whileInView={{ opacity: 1, y: 0, scale: 1 }}
+              viewport={{ once: true, margin: '-80px' }}
+              transition={{ duration: 0.8, delay: index * 0.12, ease: easeOut }}
+            >
+              <div className={cn('cinematic-panel relative h-64 overflow-hidden rounded-2xl', className)} />
+              <h3 className="relative z-10 mt-5 text-xl font-semibold text-[#0F172A]">
+                {title}
+              </h3>
+              <p className="relative z-10 mt-2 text-sm leading-6 text-[#6B7280]">
+                {body}
+              </p>
+            </motion.article>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function FinalCTA() {
+  return (
+    <motion.section
+      className="relative z-10 overflow-hidden px-4 py-24 md:px-8"
+      initial="hidden"
+      whileInView="show"
+      viewport={{ once: true, margin: '-120px' }}
+      variants={{
+        hidden: {},
+        show: { transition: { staggerChildren: 0.14 } },
+      }}
+    >
+      <motion.div
+        className="cta-circle absolute left-1/2 top-1/2 h-20 w-20 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#0F172A]"
+        variants={{
+          hidden: { scale: 0, opacity: 0 },
+          show: { scale: 18, opacity: 1 },
+        }}
+        transition={{ duration: 1.4, ease: easeOut }}
+      />
+      <div className="gold-grid absolute inset-0" />
+      <div className="relative mx-auto max-w-4xl text-center text-white">
+        <motion.h2
+          className="text-4xl font-semibold leading-tight md:text-6xl"
+          variants={{
+            hidden: { opacity: 0, y: 40 },
+            show: { opacity: 1, y: 0 },
+          }}
+          transition={{ duration: 0.85, ease: easeOut }}
+        >
+          Build The City Intelligence Layer
+        </motion.h2>
+        <motion.p
+          className="mx-auto mt-5 max-w-2xl text-base leading-7 text-white/70 md:text-lg"
+          variants={{
+            hidden: { opacity: 0, y: 28 },
+            show: { opacity: 1, y: 0 },
+          }}
+          transition={{ duration: 0.85, ease: easeOut }}
+        >
+          A premium digital twin experience for municipal leaders, operations
+          teams, and future-ready smart city programs.
+        </motion.p>
+        <motion.div
+          className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row"
+          variants={{
+            hidden: { opacity: 0, y: 44 },
+            show: { opacity: 1, y: 0 },
+          }}
+          transition={{ duration: 0.85, ease: easeOut }}
+        >
+          <button className="ripple-button rounded-full bg-[#D4AF37] px-6 py-3 font-semibold text-[#0F172A]">
+            Request Executive Demo
+          </button>
+          <button className="ripple-button rounded-full border border-white/30 bg-white/10 px-6 py-3 font-semibold text-white backdrop-blur-xl">
+            View Command Layer
+          </button>
+        </motion.div>
+      </div>
+    </motion.section>
+  );
+}
+
 export default function App() {
+  const heroRef = useRef<HTMLElement | null>(null);
+  const reducedMotion = useReducedMotion();
+  const { scrollYProgress: heroProgress } = useScroll({
+    target: heroRef,
+    offset: ['start start', 'end start'],
+  });
+  const smoothHeroProgress = useSpring(heroProgress, {
+    stiffness: 120,
+    damping: 30,
+  });
+  const headingY = useTransform(smoothHeroProgress, [0, 1], [0, -80]);
+  const mapY = useTransform(smoothHeroProgress, [0, 1], [0, -140]);
+  const dashboardY = useTransform(smoothHeroProgress, [0, 1], [0, -60]);
+  const backgroundY = useTransform(smoothHeroProgress, [0, 1], [0, 120]);
+  const heroOpacity = useTransform(smoothHeroProgress, [0, 1], [1, 0.25]);
+  const heroScale = useTransform(smoothHeroProgress, [0, 1], [1, 0.94]);
+  const mapScale = useTransform(smoothHeroProgress, [0, 0.45, 1], [0.95, 1.08, 0.98]);
+  const mapRotateX = useTransform(smoothHeroProgress, [0, 0.45, 1], [0, 3, 0]);
+  const mapOpacity = useTransform(smoothHeroProgress, [0, 0.75, 1], [1, 1, 0.35]);
+  const badgeLiveX = useTransform(smoothHeroProgress, [0, 1], [0, -40]);
+  const badgeLiveY = useTransform(smoothHeroProgress, [0, 1], [0, -120]);
+  const badgeEdgeX = useTransform(smoothHeroProgress, [0, 1], [0, 60]);
+  const badgeEdgeY = useTransform(smoothHeroProgress, [0, 1], [0, -80]);
+  const badgeSlaX = useTransform(smoothHeroProgress, [0, 1], [0, 20]);
+  const badgeSlaY = useTransform(smoothHeroProgress, [0, 1], [0, -150]);
+  const badgeTeamsX = useTransform(smoothHeroProgress, [0, 1], [0, -80]);
+  const badgeTeamsY = useTransform(smoothHeroProgress, [0, 1], [0, -100]);
+
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#F8F9FB] text-[#111827]">
+      <ScrollColorWash />
       <AnimatedBackground />
+      <ScrollProgressLayer />
 
       <motion.nav
         initial={{ opacity: 0, y: -30 }}
@@ -883,26 +1400,39 @@ export default function App() {
       </motion.nav>
 
       <main>
-        <section className="relative z-10 px-4 pb-10 pt-4 md:px-8 md:pt-8">
+        <motion.section
+          ref={heroRef}
+          className="relative z-10 px-4 pb-10 pt-4 md:px-8 md:pt-8"
+          style={{
+            opacity: reducedMotion ? 1 : heroOpacity,
+            scale: reducedMotion ? 1 : heroScale,
+          }}
+        >
+          <motion.div
+            className="pointer-events-none absolute inset-0 -z-10"
+            style={{ y: reducedMotion ? 0 : backgroundY }}
+          />
           <div className="mx-auto max-w-7xl">
-            <FadeDown className="flex justify-center">
-              <motion.div
-                animate={{ y: [0, -6, 0] }}
-                transition={{ duration: 4, repeat: Infinity, ease: easeInOut }}
-                className="badge-glass liquid-glass inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-[#0F172A]"
-              >
-                <Sparkles className="relative z-10 h-4 w-4 text-[#D4AF37]" />
-                <span className="relative z-10">Municipal Intelligence Platform</span>
-                <span className="relative z-10 h-1 w-1 rounded-full bg-[#D4AF37]" />
-                <span className="relative z-10">Live City Operations</span>
-              </motion.div>
-            </FadeDown>
+            <motion.div style={{ y: reducedMotion ? 0 : headingY }}>
+              <FadeDown className="flex justify-center">
+                <motion.div
+                  animate={reducedMotion ? undefined : { y: [0, -6, 0] }}
+                  transition={{ duration: 4, repeat: Infinity, ease: easeInOut }}
+                  className="badge-glass liquid-glass inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-[#0F172A]"
+                >
+                  <Sparkles className="relative z-10 h-4 w-4 text-[#D4AF37]" />
+                  <span className="relative z-10">Municipal Intelligence Platform</span>
+                  <span className="relative z-10 h-1 w-1 rounded-full bg-[#D4AF37]" />
+                  <span className="relative z-10">Live City Operations</span>
+                </motion.div>
+              </FadeDown>
 
-            <StaggeredFade
-              text="One Digital Twin For Every City Operation"
-              className="mx-auto mt-5 max-w-6xl text-4xl font-normal leading-[0.95] tracking-tight-custom sm:text-5xl md:text-6xl lg:text-7xl"
-              style={{ color: '#020617' }}
-            />
+              <StaggeredFade
+                text="One Digital Twin For Every City Operation"
+                className="mx-auto mt-5 max-w-6xl text-4xl font-normal leading-[0.95] tracking-tight-custom sm:text-5xl md:text-6xl lg:text-7xl"
+                style={{ color: '#020617' }}
+              />
+            </motion.div>
 
             <FadeDown
               delay={0.4}
@@ -933,16 +1463,36 @@ export default function App() {
             <DataTicker />
 
             <div className="relative mt-7 md:mt-8">
-              <FloatingBadge className="-left-2 top-10" delay={0.9}>
+              <FloatingBadge
+                className="-left-2 top-10"
+                delay={0.9}
+                x={badgeLiveX}
+                y={badgeLiveY}
+              >
                 LIVE GIS
               </FloatingBadge>
-              <FloatingBadge className="left-[36%] top-3" delay={1.05}>
+              <FloatingBadge
+                className="left-[36%] top-3"
+                delay={1.05}
+                x={badgeEdgeX}
+                y={badgeEdgeY}
+              >
                 EDGE AI
               </FloatingBadge>
-              <FloatingBadge className="bottom-10 left-[48%]" delay={1.2}>
+              <FloatingBadge
+                className="bottom-10 left-[48%]"
+                delay={1.2}
+                x={badgeSlaX}
+                y={badgeSlaY}
+              >
                 SLA ACTIVE
               </FloatingBadge>
-              <FloatingBadge className="right-[24%] top-[48%]" delay={1.45}>
+              <FloatingBadge
+                className="right-[24%] top-[48%]"
+                delay={1.45}
+                x={badgeTeamsX}
+                y={badgeTeamsY}
+              >
                 FIELD TEAMS ONLINE
               </FloatingBadge>
               <FloatingBadge className="left-[16%] bottom-16" delay={1.65}>
@@ -953,9 +1503,22 @@ export default function App() {
               </FloatingBadge>
 
               <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.65fr)]">
-                <CityMapMock />
+                <motion.div
+                  style={{
+                    y: reducedMotion ? 0 : mapY,
+                    scale: reducedMotion ? 1 : mapScale,
+                    rotateX: reducedMotion ? 0 : mapRotateX,
+                    opacity: reducedMotion ? 1 : mapOpacity,
+                    transformPerspective: 1000,
+                  }}
+                >
+                  <CityMapMock />
+                </motion.div>
 
-                <div className="grid gap-4">
+                <motion.div
+                  className="grid gap-4"
+                  style={{ y: reducedMotion ? 0 : dashboardY }}
+                >
                   <MiniDashboard />
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-2">
                     {stats.map((stat) => (
@@ -963,11 +1526,15 @@ export default function App() {
                     ))}
                   </div>
                   <OperationsPulse />
-                </div>
+                </motion.div>
               </div>
             </div>
           </div>
-        </section>
+        </motion.section>
+
+        <StickyWorkflowSection />
+        <IntelligenceLayersSection />
+        <CinematicPanels />
 
         <motion.section
           initial={{ opacity: 0, y: 30 }}
@@ -983,6 +1550,8 @@ export default function App() {
             ))}
           </div>
         </motion.section>
+
+        <FinalCTA />
       </main>
 
       <div className="liquid-glass pointer-events-none fixed bottom-6 right-6 z-20 hidden items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold text-[#0F172A] md:flex">

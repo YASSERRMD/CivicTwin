@@ -356,6 +356,266 @@ button {
   animation: tickerScroll 24s linear infinite;
 }
 
+.step-node-active {
+  animation: stepNodePulse 1.8s ease-in-out infinite;
+  box-shadow: 0 0 0 8px rgba(212, 175, 55, 0.18);
+}
+
+.workflow-visual {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 24% 20%, rgba(212, 175, 55, 0.2), transparent 28%),
+    linear-gradient(145deg, rgba(15, 23, 42, 0.96), rgba(30, 41, 59, 0.9));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.workflow-visual::before {
+  position: absolute;
+  inset: 0;
+  content: '';
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+  background-size: 34px 34px;
+  opacity: 0.45;
+}
+
+.ai-frame::after {
+  position: absolute;
+  right: 12%;
+  bottom: 18%;
+  width: 42%;
+  height: 24%;
+  content: '';
+  border: 2px solid #d4af37;
+  border-radius: 1rem;
+  box-shadow: 0 0 32px rgba(212, 175, 55, 0.34);
+  animation: aiScanBox 2.8s ease-in-out infinite;
+}
+
+.detection-box {
+  position: absolute;
+  left: 16%;
+  top: 28%;
+  width: 34%;
+  height: 30%;
+  border: 1px solid rgba(232, 212, 154, 0.75);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.detection-pulse {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: #d4af37;
+  box-shadow: 0 0 24px rgba(212, 175, 55, 0.55);
+}
+
+.detection-pulse::after {
+  position: absolute;
+  inset: 0;
+  content: '';
+  border: 1px solid rgba(212, 175, 55, 0.55);
+  border-radius: inherit;
+  animation: incidentPulse 2s ease-out infinite;
+}
+
+.gis-lock::after {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 160px;
+  height: 160px;
+  content: '';
+  border: 1px solid rgba(212, 175, 55, 0.42);
+  border-radius: 999px;
+  transform: translate(-50%, -50%);
+  animation: healthPulse 2.6s ease-in-out infinite;
+}
+
+.sla-meter::after {
+  position: absolute;
+  left: 14%;
+  top: 28%;
+  width: 72%;
+  height: 36%;
+  content: '';
+  border-radius: 999px 999px 0 0;
+  border: 1px solid rgba(212, 175, 55, 0.38);
+  border-bottom: 0;
+}
+
+.dispatch-route::after {
+  position: absolute;
+  right: 2.4rem;
+  top: 4rem;
+  content: 'RESOLVED';
+  border-radius: 999px;
+  background: rgba(212, 175, 55, 0.16);
+  padding: 0.45rem 0.75rem;
+  color: #e8d49a;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+}
+
+.intelligence-card {
+  flex: 0 0 360px;
+}
+
+.mini-network {
+  position: absolute;
+  inset: 1.25rem;
+}
+
+.mini-network::before,
+.mini-network::after {
+  position: absolute;
+  content: '';
+  background: rgba(15, 23, 42, 0.18);
+  transform-origin: left;
+}
+
+.mini-network::before {
+  left: 18%;
+  top: 34%;
+  width: 60%;
+  height: 2px;
+  rotate: 18deg;
+}
+
+.mini-network::after {
+  left: 28%;
+  top: 68%;
+  width: 56%;
+  height: 2px;
+  rotate: -22deg;
+}
+
+.mini-network span {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: #d4af37;
+  box-shadow: 0 0 22px rgba(212, 175, 55, 0.45);
+  animation: sensorBlink 3s ease-in-out infinite;
+}
+
+.mini-network span:nth-child(1) {
+  left: 14%;
+  top: 28%;
+}
+
+.mini-network span:nth-child(2) {
+  right: 20%;
+  top: 44%;
+  animation-delay: 0.3s;
+}
+
+.mini-network span:nth-child(3) {
+  left: 32%;
+  bottom: 24%;
+  animation-delay: 0.6s;
+}
+
+.mini-network span:nth-child(4) {
+  right: 12%;
+  bottom: 18%;
+  animation-delay: 0.9s;
+}
+
+.cinematic-panel {
+  background:
+    radial-gradient(circle at 18% 20%, rgba(212, 175, 55, 0.2), transparent 24%),
+    linear-gradient(145deg, #020617, #1e293b);
+}
+
+.cinematic-panel::before,
+.cinematic-panel::after {
+  position: absolute;
+  content: '';
+}
+
+.patrol-panel::before {
+  left: -10%;
+  right: -10%;
+  top: 58%;
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, #d4af37, transparent);
+  animation: roadDraw 3s ease-in-out infinite;
+}
+
+.patrol-panel::after {
+  left: 20%;
+  top: 52%;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: #d4af37;
+  box-shadow: 0 0 28px rgba(212, 175, 55, 0.6);
+  animation: patrolVehicle 4s linear infinite;
+}
+
+.command-panel::before {
+  inset: 22px;
+  border-radius: 1rem;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.14) 1px, transparent 1px),
+    linear-gradient(rgba(255, 255, 255, 0.14) 1px, transparent 1px);
+  background-size: 48px 42px;
+}
+
+.command-panel::after {
+  left: 20%;
+  right: 20%;
+  bottom: 32%;
+  height: 42px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #d4af37 18%, rgba(212, 175, 55, 0.2) 18% 38%, #d4af37 38% 64%, rgba(212, 175, 55, 0.2) 64%);
+  animation: commandBars 2.8s ease-in-out infinite;
+}
+
+.resolution-panel::before {
+  left: 18%;
+  top: 66%;
+  width: 62%;
+  height: 4px;
+  border-radius: 999px;
+  background: #d4af37;
+  transform-origin: left;
+  animation: roadDraw 3.2s ease-in-out infinite;
+}
+
+.resolution-panel::after {
+  right: 16%;
+  top: 24%;
+  width: 58px;
+  height: 58px;
+  border-radius: 999px;
+  border: 2px solid #d4af37;
+  background: rgba(212, 175, 55, 0.12);
+  box-shadow: 0 0 28px rgba(212, 175, 55, 0.3);
+}
+
+.cta-circle {
+  transform-origin: center;
+}
+
+.gold-grid {
+  background-image:
+    linear-gradient(rgba(212, 175, 55, 0.18) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(212, 175, 55, 0.18) 1px, transparent 1px);
+  background-size: 54px 54px;
+  opacity: 0.18;
+  mask-image: radial-gradient(circle at center, black 0%, transparent 72%);
+  animation: goldGridDraw 3.4s ease-in-out infinite alternate;
+}
+
 @keyframes textShimmer {
   0%,
   68% {
@@ -498,6 +758,77 @@ button {
 
   to {
     transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@keyframes stepNodePulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 6px rgba(212, 175, 55, 0.14);
+  }
+
+  50% {
+    box-shadow: 0 0 0 14px rgba(212, 175, 55, 0);
+  }
+}
+
+@keyframes aiScanBox {
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: translateY(0);
+  }
+
+  50% {
+    opacity: 1;
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes roadDraw {
+  from {
+    transform: scaleX(0);
+    opacity: 0.45;
+  }
+
+  to {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
+
+@keyframes patrolVehicle {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(210px);
+  }
+}
+
+@keyframes commandBars {
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scaleY(0.76);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+}
+
+@keyframes goldGridDraw {
+  from {
+    opacity: 0.1;
+    transform: scale(0.98);
+  }
+
+  to {
+    opacity: 0.28;
+    transform: scale(1.02);
   }
 }
 
