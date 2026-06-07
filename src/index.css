@@ -245,6 +245,104 @@ button {
   animation: assetPulse 3.2s ease-in-out infinite;
 }
 
+.heat-zone {
+  position: absolute;
+  z-index: 1;
+  width: 170px;
+  height: 120px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.28), rgba(212, 175, 55, 0.08) 42%, transparent 70%);
+  filter: blur(2px);
+  opacity: 0.72;
+  animation: heatDrift 8s ease-in-out infinite;
+}
+
+.heat-zone-a {
+  left: 16%;
+  top: 18%;
+}
+
+.heat-zone-b {
+  right: 18%;
+  top: 28%;
+  animation-delay: 1.3s;
+}
+
+.heat-zone-c {
+  left: 48%;
+  bottom: 18%;
+  animation-delay: 2.2s;
+}
+
+.zone-boundary {
+  fill: rgba(255, 255, 255, 0.12);
+  stroke: rgba(15, 23, 42, 0.34);
+  stroke-width: 2;
+  stroke-dasharray: 8 10;
+}
+
+.zone-boundary-gold {
+  stroke: rgba(212, 175, 55, 0.62);
+}
+
+.waste-route-dot,
+.inspection-route-dot {
+  position: absolute;
+  z-index: 8;
+  width: 11px;
+  height: 11px;
+  border-radius: 999px;
+  offset-rotate: 0deg;
+  pointer-events: none;
+}
+
+.waste-route-dot {
+  background: #e8d49a;
+  box-shadow: 0 0 22px rgba(232, 212, 154, 0.64);
+  offset-path: path('M 100 420 C 180 344 280 384 382 282 C 470 194 610 260 760 186');
+  animation: vehicleMove 9s -1.5s linear infinite;
+}
+
+.inspection-route-dot {
+  background: #0f172a;
+  border: 2px solid #d4af37;
+  box-shadow: 0 0 22px rgba(15, 23, 42, 0.4);
+  offset-path: path('M 76 145 C 180 98 250 164 365 128 C 520 80 620 130 805 88');
+  animation: vehicleMove 12s -3.2s linear infinite;
+}
+
+.dispatch-line {
+  position: absolute;
+  left: 37%;
+  top: 52%;
+  z-index: 4;
+  width: 30%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #d4af37, transparent);
+  transform: rotate(-18deg);
+  transform-origin: left;
+  animation: roadDraw 3.4s ease-in-out infinite;
+}
+
+.incident-cluster {
+  position: absolute;
+  z-index: 9;
+  display: flex;
+  width: 34px;
+  height: 34px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(212, 175, 55, 0.65);
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.86);
+  color: #e8d49a;
+  font-size: 0.72rem;
+  font-weight: 800;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 32px rgba(212, 175, 55, 0.34);
+  animation: stepNodePulse 2.2s ease-in-out infinite;
+}
+
 .incident-marker {
   width: 14px;
   height: 14px;
@@ -354,6 +452,72 @@ button {
 
 .ticker-track {
   animation: tickerScroll 24s linear infinite;
+}
+
+.section-bridge::before {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  content: '';
+  background:
+    linear-gradient(180deg, transparent, rgba(15, 23, 42, 0.045), transparent),
+    radial-gradient(circle at 20% 50%, rgba(212, 175, 55, 0.12), transparent 28%);
+}
+
+.bridge-line {
+  position: relative;
+  overflow: hidden;
+  background: rgba(15, 23, 42, 0.12);
+}
+
+.bridge-line::after {
+  position: absolute;
+  inset: 0;
+  content: '';
+  background: linear-gradient(90deg, transparent, #d4af37, transparent);
+  animation: streamLine 3.8s ease-in-out infinite;
+}
+
+.bridge-dot {
+  animation: softBlink 2.2s ease-in-out infinite;
+}
+
+.severity-donut {
+  background:
+    conic-gradient(#d4af37 0deg 86deg, #0f172a 86deg 220deg, #e8d49a 220deg 360deg);
+  box-shadow: 0 0 34px rgba(212, 175, 55, 0.18);
+}
+
+.city-intelligence-ring {
+  width: 180px;
+  height: 180px;
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  border-radius: 999px;
+  background:
+    conic-gradient(from 0deg, transparent, rgba(212, 175, 55, 0.22), transparent 30%),
+    radial-gradient(circle, transparent 58%, rgba(15, 23, 42, 0.06) 59%, transparent 60%);
+  animation: rotateGlow 18s linear infinite;
+}
+
+.city-intelligence-ring::before,
+.city-intelligence-ring::after {
+  position: absolute;
+  content: '';
+  border-radius: inherit;
+}
+
+.city-intelligence-ring::before {
+  inset: 24px;
+  border: 1px dashed rgba(15, 23, 42, 0.16);
+}
+
+.city-intelligence-ring::after {
+  inset: 54px;
+  border: 1px solid rgba(212, 175, 55, 0.18);
+}
+
+.motion-paused {
+  animation-play-state: paused;
 }
 
 .step-node-active {
@@ -758,6 +922,29 @@ button {
 
   to {
     transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@keyframes heatDrift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.5;
+  }
+
+  50% {
+    transform: translate3d(8px, -10px, 0) scale(1.08);
+    opacity: 0.82;
+  }
+}
+
+@keyframes streamLine {
+  from {
+    transform: translateX(-100%);
+  }
+
+  to {
+    transform: translateX(100%);
   }
 }
 
